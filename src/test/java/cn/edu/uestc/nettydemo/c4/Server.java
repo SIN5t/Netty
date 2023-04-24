@@ -10,8 +10,14 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 
+import static cn.edu.uestc.nettydemo.Utils.ByteBufferUtil.debugRead;
+
 @Slf4j
 public class Server {
+    public static void main(String[] args) throws IOException, InterruptedException {
+        //blockingModeSingleThread01();
+        nonBlockingMode();
+    }
     public static void blockingModeSingleThread01() throws IOException {
         //使用nio理解阻塞模式，单线程
         //0. 创建byteBuffer
@@ -42,16 +48,56 @@ public class Server {
                 channel.read(byteBuffer);
 
                 byteBuffer.flip();
-                log.info("读取的内容：{}",byteBuffer);
+                while(byteBuffer.hasRemaining()){
+                    log.info("读取的内容：{}",(char)byteBuffer.get());
+                }
                 byteBuffer.clear();
                 log.debug("after read...{}", channel);
-
             }
 
         }
+    }
 
+    public static void nonBlockingMode() throws IOException, InterruptedException {
+        //使用nio理解阻塞模式，单线程
+        //0. 创建byteBuffer
+        ByteBuffer byteBuffer = ByteBuffer.allocate(16);
 
+        //1. 创建服务器
+        ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+        serverSocketChannel.configureBlocking(false);//非阻塞模式
 
+        //2. 绑定监听端口
+        serverSocketChannel.bind(new InetSocketAddress(8080));
 
+        //3. 连接的集合
+        List<SocketChannel> channels = new ArrayList<>();
+
+        while(true){
+            //4. accept 建立与客户端的连接，SocketChannel用来与客户端之间通信
+            Thread.sleep(500);
+            //非阻塞，线程还会继续运行，如果没有连接建立，但socketChannel是null
+            SocketChannel socketChannel = serverSocketChannel.accept();
+
+            if (socketChannel != null) {
+                log.debug("connected..{}",socketChannel);
+                socketChannel.configureBlocking(false); // 非阻塞模式
+                channels.add(socketChannel);
+            }
+
+            for(SocketChannel channel : channels){
+               //5. 接收客户端发送的消息
+
+                //非阻塞，线程仍然会继续运行，如果没有读到数据，read 返回 0
+                int read = channel.read(byteBuffer);
+
+                if (read > 0){ ///读到了再说
+                    byteBuffer.flip();
+                    debugRead(byteBuffer);
+                    byteBuffer.clear();
+                    log.debug("after read...{}",channel);
+                }
+            }
+        }
     }
 }
