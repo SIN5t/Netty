@@ -1,4 +1,4 @@
-package cn.edu.uestc.nettydemo;
+package cn.edu.uestc.nettydemo.c1;
 
 import lombok.extern.slf4j.Slf4j;
 
