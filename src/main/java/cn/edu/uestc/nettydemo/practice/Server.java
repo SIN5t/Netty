@@ -6,7 +6,6 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.string.StringDecoder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.Charset;
@@ -35,7 +34,6 @@ public class Server {
                                     log.debug(new String(bytes));
                                 }*/
                                 log.info(byteBuf.toString(Charset.defaultCharset()));
-
                                 //ctx.writeAndFlush(msg);
                                 // 建议使用 ctx.alloc() 创建 ByteBuf
                                 ByteBuf response = ctx.alloc().buffer();
@@ -43,14 +41,7 @@ public class Server {
                                 ctx.writeAndFlush(response);
                             }
                         });
-
-
                     }
                 }).bind(8080);
-
-
-
     }
-
-
 }
